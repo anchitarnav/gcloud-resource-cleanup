@@ -33,6 +33,11 @@ class GcloudCompute(GcloudRestLibBase):
         return all_instances
 
     @compute_service_required
+    def list_all_instances(self):
+        all_instances = self.compute_service.instances().aggregatedList(project=self.project_id).execute()
+        return all_instances
+
+    @compute_service_required
     def list_referrers_of_instance(self, zone, instance):
         return self.compute_service.instances().listReferrers(project=self.project_id, zone=zone,
                                                               instance=instance).execute()
