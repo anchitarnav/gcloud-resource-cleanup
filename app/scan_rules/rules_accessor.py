@@ -14,7 +14,7 @@ class RulesAccessor:
         # Reading from filesystem for now
         for yaml_file in os.listdir(self.one_time_folder):
             with open(os.path.join(self.one_time_folder, yaml_file)) as fp:
-                y_contents = yaml.load(fp)
+                y_contents = yaml.load(fp, Loader=yaml.BaseLoader)
                 self.all_rules[y_contents['rule_id']] = y_contents
 
         # self.all_yaml_files.extend(os.listdir('scan_rules/persistent'))

@@ -7,7 +7,7 @@ all_scanned_resources = []
 resource_scanner = ResourceScanner()
 
 # TODO: Filter which rules to run and on what resource types
-rules_to_run = ['R_ABC_00001']
+rules_to_run = ['R_ABC_00002']
 
 all_project_ids = ['durable-trainer-251010']
 for project_id in all_project_ids:
