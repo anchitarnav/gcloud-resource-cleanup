@@ -44,3 +44,15 @@ class GcloudCompute(GcloudRestLibBase):
 
     def list_referrers_of_all_instances(self, zone):
         return self.list_referrers_of_instance(zone=zone, instance='-')
+
+    @compute_service_required
+    def get_all_backend_services(self):
+        return self.compute_service.backendServices().aggregatedList(project=self.project_id).execute()
+
+
+if __name__ == "__main__":
+    import json
+
+    gcloud_client = GcloudCompute()
+    all_backends = gcloud_client.get_all_backend_services()
+    print(json.dumps(all_backends))

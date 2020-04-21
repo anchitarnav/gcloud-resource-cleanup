@@ -134,3 +134,6 @@ dmypy.json
 #VSCode
 OwnGit.code-workspace
 .code/
+
+#Credentials or other sesitive information
+secrets.py

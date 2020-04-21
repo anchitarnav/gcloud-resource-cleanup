@@ -1,0 +1,35 @@
+---
+version: 001
+rule_id: R_ABC_00003
+
+rule_meta:
+  name: Example Rule 01.    # This can be  anything
+  created_by: aarnav
+  creation_timestamp: 15-Dec-2020  13:23:32 UTC+05:30   # ISO to  be decided
+  cloud_type: GCLOUD
+  tags:
+    purpose: test
+  labels:
+    - happy_rule
+    - good_rule
+
+
+rule_lifecycle:
+  type: ONE-TIME  # PERSIST /  ONE-TIME
+  creation_epoch: 1587049503004  # 13 dig. milli secs
+  expiry_time: 20-Dec-2020 13:42:34 UTC+05:30
+  enable_time: 17-Dec-2020 13:42:34 UTC+05:30
+
+
+filter_criterion:
+  - filter_id: F0001
+    filter_name: Filter 1
+    filter_type: NAME # Must be one from pre-configured values
+    required: false
+    filter_data:
+      name_regex: ".*gke.*"
+
+
+
+filter_combination:
+  join_rule: (F0001)
