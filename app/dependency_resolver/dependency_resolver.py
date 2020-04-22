@@ -105,8 +105,53 @@ class DependencyResolver:
 
                     # This backend actually refers to the required instanceGroup
                     if 'group' in backend_info and backend_info['group'] == resource_id:
-                        to_return_stack.append(backend_service_info['selfLink'])
+                        referrer_resource_id = backend_service_info['selfLink']
+
+                        # Get resource type. Expected: backendService
+                        referrer_resource_type = self.get_resource_type(self_link=referrer_resource_id)
+
+                        # Check if we have a function that can further resolve dependencies
+                        function_to_resolve = getattr(self, f'dependency_resolver__{referrer_resource_type}', None)
+                        if not function_to_resolve:
+                            print(f'Dont know how to resolve referrer of type {referrer_resource_type}')
+                            # At least add to stack what we have discovered
+                            to_return_stack.append(referrer_resource_id)
+                            continue
+
+                        # Call the corresponding function to resolve further dependecies
+                        referrer_stack = function_to_resolve(referrer_resource_id)
+
+                        if referrer_stack:
+                            to_return_stack.extend(referrer_stack)
                         break
+        return to_return_stack
+
+    def dependency_resolver__backendServices(self, resource_id):
+        """
+        Check for resources that refer this backendService and return them
+        :param resource_id: Expected to be selfLink od BackendService
+        :return: List
+        """
+        to_return_stack = [resource_id]
+
+        # 1. Checking Forwarding Rules where this backend service is listed
+        # 1a. Get info of all backend services
+
+        all_forwarding_rules = self.gcloud_lib.get_all_forwarding_rules()
+
+        if 'items' not in all_forwarding_rules:
+            return to_return_stack
+
+        for region, region_forwarding_rules_info in all_forwarding_rules['items'].items():
+
+            # There are no forwarding rules in this region
+            if 'forwardingRules' not in region_forwarding_rules_info:
+                continue
+
+            for forwarding_rule in region_forwarding_rules_info['forwardingRules']:
+                if 'backendService' in forwarding_rule and forwarding_rule['backendService'] == resource_id:
+                    to_return_stack.append(forwarding_rule['selfLink'])
+
         return to_return_stack
 
 

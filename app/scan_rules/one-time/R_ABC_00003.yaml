@@ -27,7 +27,7 @@ filter_criterion:
     filter_type: NAME # Must be one from pre-configured values
     required: false
     filter_data:
-      name_regex: ".*gke.*"
+      name_regex: ".*aarnav.*"
 
 
 

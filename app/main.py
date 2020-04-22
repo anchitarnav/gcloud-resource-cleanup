@@ -11,7 +11,7 @@ all_scanned_resources = dict()
 resource_scanner = ResourceScanner()
 
 # TODO: Filter which rules to run and on what resource types
-rules_to_run = ['R_ABC_00003']
+rules_to_run = ['R_ABC_00002', 'R_ABC_00003']
 
 for project_id in secrets.all_project_ids:
     scanned_resources = resource_scanner.scan_all_resources(resource_types=['instances'], rules=rules_to_run,

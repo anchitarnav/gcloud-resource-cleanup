@@ -49,10 +49,15 @@ class GcloudCompute(GcloudRestLibBase):
     def get_all_backend_services(self):
         return self.compute_service.backendServices().aggregatedList(project=self.project_id).execute()
 
+    @compute_service_required
+    def get_all_forwarding_rules(self):
+        return self.compute_service.forwardingRules().aggregatedList(project=self.project_id).execute()
+
 
 if __name__ == "__main__":
     import json
 
     gcloud_client = GcloudCompute()
-    all_backends = gcloud_client.get_all_backend_services()
-    print(json.dumps(all_backends))
+    all_backends = gcloud_client.get_all_forwarding_rules()
+    a = json.dumps(all_backends)
+    print(a)
