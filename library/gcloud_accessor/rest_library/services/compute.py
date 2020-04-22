@@ -53,6 +53,11 @@ class GcloudCompute(GcloudRestLibBase):
     def get_all_forwarding_rules(self):
         return self.compute_service.forwardingRules().aggregatedList(project=self.project_id).execute()
 
+    @compute_service_required
+    def delete_forwarding_rule(self, region, forwarding_rule):
+        return self.compute_service.forwardingRules().delete(project=self.project_id, region=region,
+                                                             forwardingRule=forwarding_rule).execute()
+
 
 if __name__ == "__main__":
     import json

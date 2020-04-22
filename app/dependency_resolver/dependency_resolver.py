@@ -1,5 +1,6 @@
 import re
 from library.gcloud_accessor.gcloud import Gcloud
+from library.utilities.misc import parse_link, get_resource_type
 
 
 class DependencyResolver:
@@ -10,31 +11,12 @@ class DependencyResolver:
         resolver_function = getattr(self, f'dependency_resolver__{resource_type}')
         return resolver_function(resource_id=resource_id)
 
-    def parse_link(self, self_link):
-        values = dict()
-        pattern = r'({}/[\w\-]+(?:/|$))'
-        expected_values = ['projects', 'zones', 'instances']
-        for identifier_value in expected_values:
-            search_result = re.search(pattern=pattern.format(identifier_value), string=self_link)
-            if not search_result:
-                continue
-            parsed_values = search_result.group().split('/')
-            if len(parsed_values) < 2:
-                continue
-            values[identifier_value] = parsed_values[1]
-        return values
-
-    def get_resource_type(self, self_link):
-        return self_link.split("/")[-2]
-        # TODO: Validate against valid resource types before returning
-        # If gke in result, its a kubernetes cluster
-
     def dependency_resolver__instances(self, resource_id):
         #  The stack to return at end
         dependency_stack = [resource_id]
 
         instance_self_link = resource_id
-        self_link_values = self.parse_link(self_link=instance_self_link)
+        self_link_values = parse_link(self_link=instance_self_link)
         # TODO: Handle case when self_link parsing fails. Raise Customer exception
 
         zone = self_link_values.get('zones')
@@ -51,7 +33,7 @@ class DependencyResolver:
         for referrer_details in instance_referrers['items']:
             # TODO: Handle if resource type could not be guessed
             # 1. Get the dependency type
-            referrer_resource_type = self.get_resource_type(self_link=referrer_details['referrer'])
+            referrer_resource_type = get_resource_type(self_link=referrer_details['referrer'])
 
             # 2. Dynamic Determine Call the function that handles this type of resource
             function_to_resolve = getattr(self, f'dependency_resolver__{referrer_resource_type}', None)
@@ -108,7 +90,7 @@ class DependencyResolver:
                         referrer_resource_id = backend_service_info['selfLink']
 
                         # Get resource type. Expected: backendService
-                        referrer_resource_type = self.get_resource_type(self_link=referrer_resource_id)
+                        referrer_resource_type = get_resource_type(self_link=referrer_resource_id)
 
                         # Check if we have a function that can further resolve dependencies
                         function_to_resolve = getattr(self, f'dependency_resolver__{referrer_resource_type}', None)
