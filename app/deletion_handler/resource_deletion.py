@@ -27,5 +27,5 @@ class ResourceDeletionHandler:
     def delete__forwardingRules(self, resource_id):
         self_link_values = parse_link(self_link=resource_id)
         delete_res = self.gcloud_lib.delete_forwarding_rule(region=self_link_values['regions'],
-                                                            forwarding_rule=self_link_values['forwardingRules'])
+                                                            forwarding_rule_name=self_link_values['forwardingRules'])
         return delete_res
