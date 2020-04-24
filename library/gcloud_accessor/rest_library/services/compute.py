@@ -86,6 +86,14 @@ class GcloudCompute(GcloudRestLibBase):
         return self.compute_service.forwardingRules().aggregatedList(project=self.project_id).execute()
 
     @compute_service_required
+    def get_all_instance_group_managers(self):
+        return self.compute_service.instanceGroupManagers().aggregatedList(project=self.project_id).execute()
+
+    @compute_service_required
+    def get_all_url_maps(self):
+        return self.compute_service.urlMaps().list(project=self.project_id).execute()
+
+    @compute_service_required
     def wait_for_zonal_operation(self, zone, operation, max_timeout_mins=3):
         """
         :param region:
@@ -111,7 +119,7 @@ class GcloudCompute(GcloudRestLibBase):
         if error:
             self.logger.exception('Error while polling for operation: {}'.format(error))
             raise ApplicationException(error)
-        return operation_status, operation
+        return operation_status == 'DONE', operation
 
     @compute_service_required
     def wait_for_regional_operation(self, region, operation, max_timeout_mins=3):
@@ -135,7 +143,7 @@ class GcloudCompute(GcloudRestLibBase):
         if error:
             self.logger.exception('Error while polling for operation: {}'.format(error))
             raise ApplicationException(error)
-        return operation_status, operation
+        return operation_status == 'DONE', operation
 
     @compute_service_required
     def wait_for_global_operation(self, operation, max_timeout_mins=3):
@@ -159,7 +167,7 @@ class GcloudCompute(GcloudRestLibBase):
         if error:
             self.logger.exception('Error while polling for operation: {}'.format(error))
             raise ApplicationException(error)
-        return operation_status, operation
+        return operation_status == 'DONE', operation
 
     @compute_service_required
     @handle_delete_exceptions
@@ -186,7 +194,7 @@ class GcloudCompute(GcloudRestLibBase):
 
     @compute_service_required
     @handle_delete_exceptions
-    def delete_backend_service(self, backend_service_name):
+    def delete_global_backend_service(self, backend_service_name):
         request_id = uuid.uuid4()
         self.logger.debug('Attempting to  delete Backend Service {}'.format(backend_service_name))
 
@@ -201,7 +209,7 @@ class GcloudCompute(GcloudRestLibBase):
 
     @compute_service_required
     @handle_delete_exceptions
-    def delete_backend_service(self, region, backend_service_name):
+    def delete_regional_backend_service(self, region, backend_service_name):
         request_id = uuid.uuid4()
         self.logger.debug('Attempting to  delete Backend Service {}'.format(backend_service_name))
 
@@ -242,9 +250,25 @@ class GcloudCompute(GcloudRestLibBase):
         self.logger.debug('Final operation : {}'.format(operation))
         return result
 
+    @compute_service_required
+    @handle_delete_exceptions
+    def delete_instance_group_manager(self, zone, instance_group_manager_name):
+        request_id = uuid.uuid4()
+        self.logger.debug('Attempting to  delete Instance Group Manager {}'.format(instance_group_manager_name))
+
+        operation = self.compute_service.instanceGroupManagers().delete(
+            project=self.project_id, zone=zone, instanceGroupManager=instance_group_manager_name, requestId=request_id) \
+            .execute()
+
+        result, operation = self.wait_for_zonal_operation(zone=zone, operation=operation)
+        self.logger.debug('Delete response : {}'.format(result))
+        self.logger.debug('Final operation : {}'.format(operation))
+        return result
+
 if __name__ == "__main__":
     import json
 
     gcloud_client = GcloudCompute()
-    delete_res = gcloud_client.delete_instance(zone='us-central1-a', instance_name='instance-102')
-    print(delete_res)
+    delete_res = gcloud_client.get_all_url_maps()
+    a = json.dumps(delete_res)
+    print(a)

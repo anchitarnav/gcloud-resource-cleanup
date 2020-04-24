@@ -16,7 +16,7 @@ class DependencyResolver:
         dependency_stack = [resource_id]
 
         instance_self_link = resource_id
-        self_link_values = parse_link(self_link=instance_self_link)
+        self_link_values = parse_link(self_link=instance_self_link, extra_expected_values=['instances'])
         # TODO: Handle case when self_link parsing fails. Raise Customer exception
 
         zone = self_link_values.get('zones')
@@ -106,6 +106,22 @@ class DependencyResolver:
                         if referrer_stack:
                             to_return_stack.extend(referrer_stack)
                         break
+
+        # 2. Instance Group Managers
+        all_instance_group_managers = self.gcloud_lib.get_all_instance_group_managers()
+
+        if 'items' not in all_instance_group_managers:
+            return to_return_stack
+
+        for reg_zone, region_zone in all_instance_group_managers['items'].items():
+
+            if 'instanceGroupManagers' not in region_zone:
+                continue
+
+            for instance_group_manager in region_zone['instanceGroupManagers']:
+                if instance_group_manager.get('instanceGroup') == resource_id:
+                    to_return_stack.append(instance_group_manager['selfLink'])
+
         return to_return_stack
 
     def dependency_resolver__backendServices(self, resource_id):

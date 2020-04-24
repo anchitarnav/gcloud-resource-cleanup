@@ -4,7 +4,7 @@ import re
 def parse_link(self_link, extra_expected_values=()):
     values = dict()
     pattern = r'({}/[\w\-]+(?:/|$))'
-    expected_values = ['projects', 'zones', 'instances', 'regions', 'forwardingRules']
+    expected_values = ['projects', 'zones', 'regions', 'global']
     expected_values.extend(extra_expected_values)
     for identifier_value in expected_values:
         search_result = re.search(pattern=pattern.format(identifier_value), string=self_link)

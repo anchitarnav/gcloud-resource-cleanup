@@ -1,5 +1,6 @@
 from resource_scanner.resource_scanner import ResourceScanner
 from dependency_resolver.dependency_resolver import DependencyResolver
+from deletion_handler.resource_deletion import ResourceDeletionHandler
 
 # Temp Import
 import secrets
@@ -9,9 +10,10 @@ all_scanned_resources = dict()
 
 # 1. Scan resources
 resource_scanner = ResourceScanner()
+deletion_handler = ResourceDeletionHandler()
 
 # TODO: Filter which rules to run and on what resource types
-rules_to_run = ['R_ABC_00002', 'R_ABC_00003']
+rules_to_run = ['R_ABC_00003']
 
 for project_id in secrets.all_project_ids:
     scanned_resources = resource_scanner.scan_all_resources(resource_types=['instances'], rules=rules_to_run,
@@ -28,6 +30,9 @@ for project_id, project_data in all_scanned_resources.items():
             dependency_stack = dependency_resolver.resolve_dependencies(
                 resource_id=resource['resource_id'], resource_type=scanned_resource_type)
             print(dependency_stack)
+            dependency_stack.reverse()
+            res = deletion_handler.delete_stack(dependency_stack)
+            print(res)
 
 # 2. Delete resources
 # delete_resources(all_scanned_resources)
