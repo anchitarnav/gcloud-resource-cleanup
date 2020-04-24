@@ -2,6 +2,8 @@ from logger import get_logger
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
 
+import googleapiclient.errors
+
 
 class ResourceDeletionHandler:
     def __init__(self):
@@ -31,7 +33,13 @@ class ResourceDeletionHandler:
                 break
 
             # Initiate deletion
-            delete_result = deletion_function(resource_id)
+            try:
+                delete_result = deletion_function(resource_id)
+            except googleapiclient.errors.Error as ex:
+                delete_result = False
+                self.logger.exception("Exception occurred during deletion of stack .. ")
+                self.logger.exception(ex)
+
             resource_deletion_status.append(delete_result)
 
             if not delete_result:
@@ -81,4 +89,16 @@ class ResourceDeletionHandler:
         self_link_values = parse_link(self_link=resource_id, extra_expected_values=['forwardingRules'])
         delete_res = self.gcloud_lib.delete_forwarding_rule(region=self_link_values['regions'],
                                                             forwarding_rule_name=self_link_values['forwardingRules'])
+        return delete_res
+
+    def delete__urlMaps(self, resource_id):
+        self_link_values = parse_link(self_link=resource_id, extra_expected_values=['urlMaps'])
+        if 'regions' in self_link_values:
+            delete_res = self.gcloud_lib.delete_regional_url_map(region=self_link_values['regions'],
+                                                                 url_map_name=self_link_values['urlMaps'])
+        elif 'global' in self_link_values:
+            delete_res = self.gcloud_lib.delete_global_url_map(url_map_name=self_link_values['urlMaps'])
+        else:
+            self.logger.warning(f'Could not figure out how to delete the URL Map {resource_id}')
+            delete_res = False
         return delete_res

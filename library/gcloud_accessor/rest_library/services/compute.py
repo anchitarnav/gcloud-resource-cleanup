@@ -90,8 +90,12 @@ class GcloudCompute(GcloudRestLibBase):
         return self.compute_service.instanceGroupManagers().aggregatedList(project=self.project_id).execute()
 
     @compute_service_required
-    def get_all_url_maps(self):
+    def get_all_global_url_maps(self):
         return self.compute_service.urlMaps().list(project=self.project_id).execute()
+
+    @compute_service_required
+    def get_all_regional_url_maps(self, region):
+        return self.compute_service.regionUrlMaps().list(project=self.project_id, region=region).execute()
 
     @compute_service_required
     def wait_for_zonal_operation(self, zone, operation, max_timeout_mins=3):
@@ -265,10 +269,41 @@ class GcloudCompute(GcloudRestLibBase):
         self.logger.debug('Final operation : {}'.format(operation))
         return result
 
+    @compute_service_required
+    @handle_delete_exceptions
+    def delete_regional_url_map(self, region, url_map_name):
+        request_id = uuid.uuid4()
+        self.logger.debug('Attempting to  delete Regional URL Map {}'.format(url_map_name))
+
+        operation = self.compute_service.regionUrlMaps().delete(
+            project=self.project_id, region=region, urlMap=url_map_name, requestId=request_id
+        ).execute()
+
+        result, operation = self.wait_for_regional_operation(region=region, operation=operation)
+        self.logger.debug('Delete response : {}'.format(result))
+        self.logger.debug('Final operation : {}'.format(operation))
+        return result
+
+    @compute_service_required
+    @handle_delete_exceptions
+    def delete_global_url_map(self, url_map_name):
+        request_id = uuid.uuid4()
+        self.logger.debug('Attempting to  Global URL Map {}'.format(url_map_name))
+
+        operation = self.compute_service.urlMaps().delete(
+            project=self.project_id, urlMap=url_map_name, requestId=request_id
+        ).execute()
+
+        result, operation = self.wait_for_global_operation(operation=operation)
+        self.logger.debug('Delete response : {}'.format(result))
+        self.logger.debug('Final operation : {}'.format(operation))
+        return result
+
+
 if __name__ == "__main__":
     import json
 
     gcloud_client = GcloudCompute()
-    delete_res = gcloud_client.get_all_url_maps()
+    delete_res = gcloud_client.get_all_regional_url_maps(region='us-central1')
     a = json.dumps(delete_res)
     print(a)

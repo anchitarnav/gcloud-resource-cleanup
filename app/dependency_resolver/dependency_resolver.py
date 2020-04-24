@@ -58,7 +58,22 @@ class DependencyResolver:
         # Since we don't have a direct API that can give instance groups
         # We shall have to check all possible places where an InstanceGroup Can be referred
 
-        # 1. Backend Services
+        # 1. Instance Group Managers
+        all_instance_group_managers = self.gcloud_lib.get_all_instance_group_managers()
+
+        if 'items' not in all_instance_group_managers:
+            return to_return_stack
+
+        for reg_zone, region_zone in all_instance_group_managers['items'].items():
+
+            if 'instanceGroupManagers' not in region_zone:
+                continue
+
+            for instance_group_manager in region_zone['instanceGroupManagers']:
+                if instance_group_manager.get('instanceGroup') == resource_id:
+                    to_return_stack.append(instance_group_manager['selfLink'])
+
+        # 2. Backend Services
         all_backend_services_info = self.gcloud_lib.get_all_backend_services()
 
         # There are no backend services in the entire project
@@ -107,33 +122,17 @@ class DependencyResolver:
                             to_return_stack.extend(referrer_stack)
                         break
 
-        # 2. Instance Group Managers
-        all_instance_group_managers = self.gcloud_lib.get_all_instance_group_managers()
-
-        if 'items' not in all_instance_group_managers:
-            return to_return_stack
-
-        for reg_zone, region_zone in all_instance_group_managers['items'].items():
-
-            if 'instanceGroupManagers' not in region_zone:
-                continue
-
-            for instance_group_manager in region_zone['instanceGroupManagers']:
-                if instance_group_manager.get('instanceGroup') == resource_id:
-                    to_return_stack.append(instance_group_manager['selfLink'])
-
         return to_return_stack
 
     def dependency_resolver__backendServices(self, resource_id):
         """
         Check for resources that refer this backendService and return them
-        :param resource_id: Expected to be selfLink od BackendService
+        :param resource_id: Expected to be selfLink of BackendService
         :return: List
         """
         to_return_stack = [resource_id]
 
         # 1. Checking Forwarding Rules where this backend service is listed
-        # 1a. Get info of all backend services
 
         all_forwarding_rules = self.gcloud_lib.get_all_forwarding_rules()
 
@@ -149,6 +148,18 @@ class DependencyResolver:
             for forwarding_rule in region_forwarding_rules_info['forwardingRules']:
                 if 'backendService' in forwarding_rule and forwarding_rule['backendService'] == resource_id:
                     to_return_stack.append(forwarding_rule['selfLink'])
+
+        # 2. Checking all URL Maps where this is referred
+        # TODO: Based on the load balancing scheme of the BackendService determine
+        #  if it can be referred global URL MAP  or a local url map.
+        #  LoadBalancingScheme => EXTERNAL & INTERNAL_SELF_MANAGED -> Global || INTERNAL_MANAGED -> Regional
+
+        self_link_values = parse_link(self_link=resource_id)
+        all_url_maps = self.gcloud_lib.get_all_regional_url_maps(region=self_link_values['regions'])
+
+        for url_map in all_url_maps.get('items', []):
+            if url_map.get('defaultService', None) == resource_id:
+                to_return_stack.append(url_map['selfLink'])
 
         return to_return_stack
 

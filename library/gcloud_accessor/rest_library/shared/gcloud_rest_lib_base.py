@@ -1,6 +1,7 @@
 # TODO: Remove secrets import.
 import secrets
 
+from library.utilities.misc import parse_link, get_resource_type
 
 class GcloudRestLibBase:
     """
