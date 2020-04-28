@@ -27,9 +27,17 @@ filter_criterion:
     filter_type: NAME # Must be one from pre-configured values
     required: false
     filter_data:
-      name_regex: ".*aarnav.*"
+      name_regex: ".*terraform.*"
+
+  - filter_id: F0002
+    filter_name: Filter 2
+    filter_type: AGE # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      age: 76
+      unit: hours
 
 
 
 filter_combination:
-  join_rule: (F0001)
+  join_rule: (F0001 and F0002)

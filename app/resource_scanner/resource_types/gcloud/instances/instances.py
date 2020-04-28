@@ -1,3 +1,6 @@
+import iso8601
+import time
+
 from resource_scanner.resource_types.resource_scanner_base import ResourceScannerBase
 
 return_format = [
@@ -32,7 +35,9 @@ class GcloudInstancesScanner(ResourceScannerBase):
             temp_dict = {
                 "resource_id": instance['selfLink'],
                 "filter_data": {
-                    "NAME": instance['name']
+                    "NAME": instance['name'],
+                    "AGE": int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp())
+                    # Age of instance in seconds
                 }
             }
 

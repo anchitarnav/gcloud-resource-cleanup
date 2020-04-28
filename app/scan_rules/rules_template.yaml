@@ -44,6 +44,14 @@ filter_criterion:
       - creation_time: 1587049503004
       - qualification: >
 
+  - filter_id: F0005
+    filter_name: Filter 5
+    filter_type: AGE # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      - age: 3
+      - unit: hours
+
   - filter_id: F0004
     filter_name: Filter 4
     filter_type: PROJECT_IDS # Must be one from pre-configured values

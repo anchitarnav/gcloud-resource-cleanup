@@ -31,8 +31,8 @@ for project_id, project_data in all_scanned_resources.items():
                 resource_id=resource['resource_id'], resource_type=scanned_resource_type)
             print(dependency_stack)
             dependency_stack.reverse()
-            res = deletion_handler.delete_stack(dependency_stack)
-            print(res)
+            # res = deletion_handler.delete_stack(dependency_stack)
+            # print(res)
 
 # 2. Delete resources
 # delete_resources(all_scanned_resources)

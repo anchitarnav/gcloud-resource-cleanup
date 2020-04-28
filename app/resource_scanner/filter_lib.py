@@ -20,3 +20,15 @@ class FilterLib:
         # In  the present case the candidate is a  string.
         # TODO: Document this contract centrally
         return bool(re.search(pattern=name_regex, string=candidate))
+
+    def filter_handler__age(self, filter_data, candidate):
+        """
+        Presently the candaite is an int -> Age  of resource  in seconds
+        :param filter_data:
+        :param candidate:
+        :return: bool
+        """
+        multiplier_to_secs = {'days': 24 * 60 * 60, 'hours': 60 * 60}
+        amount = int(filter_data['age'])
+        unit = filter_data['unit']
+        return bool(candidate - amount * multiplier_to_secs[unit] > 0)
