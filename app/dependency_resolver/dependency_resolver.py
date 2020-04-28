@@ -1,9 +1,13 @@
 import re
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
+from library.utilities.exceptions import ApplicationException
+from library.utilities.logger import get_logger
 
 
 class DependencyResolver:
+    logger = get_logger('dependency_resolver')
+
     def __init__(self):
         self.gcloud_lib = Gcloud()
 
@@ -132,6 +136,34 @@ class DependencyResolver:
         """
         to_return_stack = [resource_id]
 
+        # 2. Checking all URL Maps where this is referred
+        # TODO: Based on the load balancing scheme of the BackendService determine
+        #  if it can be referred global URL MAP  or a local url map.
+        #  LoadBalancingScheme => EXTERNAL & INTERNAL_SELF_MANAGED -> Global || INTERNAL_MANAGED -> Regional
+
+        self_link_values = parse_link(self_link=resource_id)
+        all_url_maps = self.gcloud_lib.get_all_regional_url_maps(region=self_link_values['regions'])
+
+        for url_map in all_url_maps.get('items', []):
+            if url_map.get('defaultService', None) == resource_id:
+
+                referrer_resource_id = url_map['selfLink']
+                referrer_resource_type = get_resource_type(self_link=referrer_resource_id)
+
+                # Check if we have a function that can further resolve dependencies
+                function_to_resolve = getattr(self, f'dependency_resolver__{referrer_resource_type}', None)
+                if not function_to_resolve:
+                    print(f'Dont know how to resolve referrer of type {referrer_resource_type}')
+                    # At least add to stack what we have discovered
+                    to_return_stack.append(referrer_resource_id)
+                    continue
+
+                # Call the corresponding function to resolve further dependecies
+                referrer_stack = function_to_resolve(referrer_resource_id)
+
+                if referrer_stack:
+                    to_return_stack.extend(referrer_stack)
+
         # 1. Checking Forwarding Rules where this backend service is listed
 
         all_forwarding_rules = self.gcloud_lib.get_all_forwarding_rules()
@@ -149,17 +181,26 @@ class DependencyResolver:
                 if 'backendService' in forwarding_rule and forwarding_rule['backendService'] == resource_id:
                     to_return_stack.append(forwarding_rule['selfLink'])
 
-        # 2. Checking all URL Maps where this is referred
-        # TODO: Based on the load balancing scheme of the BackendService determine
-        #  if it can be referred global URL MAP  or a local url map.
-        #  LoadBalancingScheme => EXTERNAL & INTERNAL_SELF_MANAGED -> Global || INTERNAL_MANAGED -> Regional
+        return to_return_stack
 
-        self_link_values = parse_link(self_link=resource_id)
-        all_url_maps = self.gcloud_lib.get_all_regional_url_maps(region=self_link_values['regions'])
+    def dependency_resolver__urlMaps(self, resource_id):
+        to_return_stack = [resource_id]
 
-        for url_map in all_url_maps.get('items', []):
-            if url_map.get('defaultService', None) == resource_id:
-                to_return_stack.append(url_map['selfLink'])
+        # 1. Checking http Proxies where this url map is listed
+
+        self_link_values = parse_link(self_link=resource_id, extra_expected_values=['urlMaps'])
+        if 'global' in self_link_values:
+            all_target_http_proxies_maps = self.gcloud_lib.get_all_global_http_proxies()
+        elif 'regions' in self_link_values:
+            all_target_http_proxies_maps = self.gcloud_lib.get_all_regional_http_proxies(
+                region=self_link_values['regions'])
+        else:
+            self.logger.warning('Could not resolve dependency for the URL MAP {}'.format(resource_id))
+            return to_return_stack
+
+        for http_proxy in all_target_http_proxies_maps.get('items', []):
+            if http_proxy.get('urlMap') == resource_id:
+                to_return_stack.append(http_proxy['selfLink'])
 
         return to_return_stack
 

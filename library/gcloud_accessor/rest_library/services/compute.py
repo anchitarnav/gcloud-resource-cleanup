@@ -98,6 +98,14 @@ class GcloudCompute(GcloudRestLibBase):
         return self.compute_service.regionUrlMaps().list(project=self.project_id, region=region).execute()
 
     @compute_service_required
+    def get_all_global_http_proxies(self):
+        return self.compute_service.targetHttpProxies().list(project=self.project_id).execute()
+
+    @compute_service_required
+    def get_all_regional_http_proxies(self, region):
+        return self.compute_service.regionTargetHttpProxies().list(project=self.project_id, region=region).execute()
+
+    @compute_service_required
     def wait_for_zonal_operation(self, zone, operation, max_timeout_mins=3):
         """
         :param region:
@@ -299,11 +307,41 @@ class GcloudCompute(GcloudRestLibBase):
         self.logger.debug('Final operation : {}'.format(operation))
         return result
 
+    @compute_service_required
+    @handle_delete_exceptions
+    def delete_regional_http_proxy(self, http_proxy_name, region):
+        request_id = uuid.uuid4()
+        self.logger.debug('Attempting to  Regional HTTP Proxy {}'.format(http_proxy_name))
+
+        operation = self.compute_service.regionTargetHttpProxies().delete(
+            project=self.project_id, region=region, targetHttpProxy=http_proxy_name, requestId=request_id
+        ).execute()
+
+        result, operation = self.wait_for_global_operation(operation=operation)
+        self.logger.debug('Delete response : {}'.format(result))
+        self.logger.debug('Final operation : {}'.format(operation))
+        return result
+
+    @compute_service_required
+    @handle_delete_exceptions
+    def delete_global_http_proxy(self, http_proxy_name):
+        request_id = uuid.uuid4()
+        self.logger.debug('Attempting to  Global HTTP Proxy {}'.format(http_proxy_name))
+
+        operation = self.compute_service.targetHttpProxies().delete(
+            project=self.project_id, targetHttpProxy=http_proxy_name, requestId=request_id
+        ).execute()
+
+        result, operation = self.wait_for_global_operation(operation=operation)
+        self.logger.debug('Delete response : {}'.format(result))
+        self.logger.debug('Final operation : {}'.format(operation))
+        return result
+
 
 if __name__ == "__main__":
     import json
 
     gcloud_client = GcloudCompute()
-    delete_res = gcloud_client.get_all_regional_url_maps(region='us-central1')
+    delete_res = gcloud_client.get_all_regional_http_proxies(region='us-central1')
     a = json.dumps(delete_res)
     print(a)

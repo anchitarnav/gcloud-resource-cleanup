@@ -102,3 +102,16 @@ class ResourceDeletionHandler:
             self.logger.warning(f'Could not figure out how to delete the URL Map {resource_id}')
             delete_res = False
         return delete_res
+
+    def delete__targetHttpProxies(self, resource_id):
+        self_link_values = parse_link(self_link=resource_id, extra_expected_values=['targetHttpProxies'])
+        if 'regions' in self_link_values:
+            delete_res = self.gcloud_lib.delete_regional_http_proxy(region=self_link_values['regions'],
+                                                                    http_proxy_name=self_link_values[
+                                                                        'targetHttpProxies'])
+        elif 'global' in self_link_values:
+            delete_res = self.gcloud_lib.delete_global_http_proxy(http_proxy_name=self_link_values['targetHttpProxies'])
+        else:
+            self.logger.warning(f'Could not figure out how to delete the HTTP proxy {resource_id}')
+            delete_res = False
+        return delete_res
