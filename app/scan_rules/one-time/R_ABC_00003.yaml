@@ -22,22 +22,14 @@ rule_lifecycle:
 
 
 filter_criterion:
-  - filter_id: F0001
-    filter_name: Filter 1
-    filter_type: NAME # Must be one from pre-configured values
-    required: false
-    filter_data:
-      name_regex: ".*terraform.*"
-
-  - filter_id: F0002
-    filter_name: Filter 2
-    filter_type: AGE # Must be one from pre-configured values
+  - filter_id: F0006
+    filter_name: Filter 6
+    filter_type: TAG # Must be one from pre-configured values
     requried: false
     filter_data:
-      age: 76
-      unit: hours
-
+      key: 'dnd_automation'  # Accepts valid python regex
+#      value: 'flowlogs-automation'  # Accepts regex # Optional
 
 
 filter_combination:
-  join_rule: (F0001 and F0002)
+  join_rule: (F0006)

@@ -35,12 +35,16 @@ class GcloudInstancesScanner(ResourceScannerBase):
             temp_dict = {
                 "resource_id": instance['selfLink'],
                 "filter_data": {
+                    # Instance Name
                     "NAME": instance['name'],
-                    "AGE": int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp())
+
                     # Age of instance in seconds
+                    "AGE": int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp()),
+
+                    # Dict: Key: value for all labels on instance. Value can be "" as well
+                    'TAG': instance.get('labels', {})
                 }
             }
-
             # Additional modifications can be done here
             to_return.append(temp_dict)
         return to_return

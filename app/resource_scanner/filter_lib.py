@@ -23,7 +23,7 @@ class FilterLib:
 
     def filter_handler__age(self, filter_data, candidate):
         """
-        Presently the candaite is an int -> Age  of resource  in seconds
+        Presently the candidate is an int -> Age  of resource  in seconds
         :param filter_data:
         :param candidate:
         :return: bool
@@ -32,3 +32,27 @@ class FilterLib:
         amount = int(filter_data['age'])
         unit = filter_data['unit']
         return bool(candidate - amount * multiplier_to_secs[unit] > 0)
+
+    def filter_handler__tag(self, filter_data, candidate):
+        """
+        :param filter_data:
+        :param candidate: Expected: Dict of key value pairs. Accepts blank dict as well
+        :return: bool
+        """
+        expected_key_regex = filter_data['key']
+        expected_value_regex = filter_data.get('value', None)
+
+        for actual_label_key, actual_label_value in candidate.items():
+            if not re.search(pattern=expected_key_regex, string=actual_label_key):
+                continue
+
+            # Key is passing. Yet to check if a value should pass as well
+            if not expected_value_regex:
+                # No value check specified.
+                # Every rule can check for just 1 tag. So done with checking
+                return True
+
+            if re.search(pattern=expected_value_regex, string=actual_label_value):
+                return True
+
+        return False
