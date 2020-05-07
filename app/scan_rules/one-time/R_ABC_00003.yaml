@@ -22,22 +22,14 @@ rule_lifecycle:
 
 
 filter_criterion:
-  - filter_id: F0001
-    filter_name: Filter 1
-    filter_type: NAME # Must be one from pre-configured values
-    required: false
-    filter_data:
-      name_regex: ".*terraform.*"
-
-  - filter_id: F0002
-    filter_name: Filter 2
-    filter_type: AGE # Must be one from pre-configured values
+  - filter_id: F0006
+    filter_name: Filter 7
+    filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
     requried: false
     filter_data:
-      age: 76
-      unit: hours
-
+      expected_regex: 'dnd_\d+'
+      digit_unit: days
 
 
 filter_combination:
-  join_rule: (F0001 and F0002)
+  join_rule: (F0006)

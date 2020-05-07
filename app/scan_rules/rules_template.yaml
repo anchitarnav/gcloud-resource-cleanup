@@ -41,25 +41,47 @@ filter_criterion:
     filter_type: CREATION_TIME # Must be one from pre-configured values
     requried: false
     filter_data:
-      - creation_time: 1587049503004
-      - qualification: >
+      creation_time: 1587049503004
+      qualification: >
 
-  - filter_id: F0005
+  - filter_id: F0004
     filter_name: Filter 5
     filter_type: AGE # Must be one from pre-configured values
     requried: false
     filter_data:
-      - age: 3
-      - unit: hours
+      age: 3
+      unit: hours
 
-  - filter_id: F0004
+  - filter_id: F0005
     filter_name: Filter 4
     filter_type: PROJECT_IDS # Must be one from pre-configured values
     requried: true
     filter_data:
-      - project_ids:
-          - durable-trainer-251010
-          - gcp-ingestion-playground
+      project_ids:
+        - durable-trainer-251010
+        - gcp-ingestion-playground
+
+  - filter_id: F0006
+    filter_name: Filter 6
+    filter_type: TAG # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      key: 'created_by'  # Accepts valid python regex
+      value: 'automation'  # Accepts regex # Optional
+
+      # If just key is present, match key
+      # If key and value are present, match key and value
+
+  - filter_id: F0007
+      filter_name: Filter 7
+      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+      requried: false
+      filter_data:
+        expected_regex: 'dnd_\d+'
+        digit_unit: days  # Allowed Values: hours/days
+      # Detects expected_regex anywhere in resource name or in any tag(label) key or value
+      # Considers \d (digit) as the Max Age (in digit_unit) for which the resource is expected to live
+      # e.g. a tag like dnd_3 and here would mean 3 days to expected expiry time
 
 
 filter_combination:

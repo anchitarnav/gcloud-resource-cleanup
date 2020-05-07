@@ -32,15 +32,31 @@ class GcloudInstancesScanner(ResourceScannerBase):
                 all_instances.extend(all_instances_response['items'][zone_name]['instances'])
 
         for instance in all_instances:
+            instance_name = instance['name']
+            instance_age = int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp())
+            instance_tags = instance.get('labels', {})
+            instance_literals = [
+                literal
+                for possible_literals in (instance_tags.keys(), instance_tags.values(), [instance_name])
+                for literal in possible_literals if literal
+            ]
+
             temp_dict = {
                 "resource_id": instance['selfLink'],
                 "filter_data": {
-                    "NAME": instance['name'],
-                    "AGE": int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp())
+                    # Instance Name
+                    "NAME": instance_name,
+
                     # Age of instance in seconds
+                    "AGE": instance_age,
+
+                    # Dict: Key: value for all labels on instance. Value can be "" as well
+                    'TAG': instance.get('labels', {}),
+
+                    # All literals, including the name, keys, values
+                    'AUTODETECT_DECLARED_EXPIRY': {'literals': instance_literals, 'age': instance_age}
                 }
             }
-
             # Additional modifications can be done here
             to_return.append(temp_dict)
         return to_return
