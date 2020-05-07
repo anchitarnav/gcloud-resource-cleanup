@@ -4,6 +4,7 @@ from deletion_handler.resource_deletion import ResourceDeletionHandler
 
 # Temp Import
 import secrets
+import sys
 
 # Temp Queue. Later adapt to cloud based queue
 all_scanned_resources = dict()
@@ -13,7 +14,7 @@ resource_scanner = ResourceScanner()
 deletion_handler = ResourceDeletionHandler()
 
 # TODO: Filter which rules to run and on what resource types
-rules_to_run = ['R_ABC_00003']
+rules_to_run = ['R_ABC_00004']
 
 for project_id in secrets.all_project_ids:
     scanned_resources = resource_scanner.scan_all_resources(resource_types=['instances'], rules=rules_to_run,
@@ -21,6 +22,7 @@ for project_id in secrets.all_project_ids:
     all_scanned_resources[project_id] = scanned_resources
 
 print(all_scanned_resources)
+sys.exit(0)
 
 dependency_resolver = DependencyResolver()
 

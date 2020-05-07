@@ -23,12 +23,12 @@ rule_lifecycle:
 
 filter_criterion:
   - filter_id: F0006
-    filter_name: Filter 6
-    filter_type: TAG # Must be one from pre-configured values
+    filter_name: Filter 7
+    filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
     requried: false
     filter_data:
-      key: 'dnd_automation'  # Accepts valid python regex
-#      value: 'flowlogs-automation'  # Accepts regex # Optional
+      expected_regex: 'dnd_\d+'
+      digit_unit: days
 
 
 filter_combination:

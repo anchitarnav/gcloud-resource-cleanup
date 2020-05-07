@@ -72,6 +72,17 @@ filter_criterion:
       # If just key is present, match key
       # If key and value are present, match key and value
 
+  - filter_id: F0007
+      filter_name: Filter 7
+      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+      requried: false
+      filter_data:
+        expected_regex: 'dnd_\d+'
+        digit_unit: days  # Allowed Values: hours/days
+      # Detects expected_regex anywhere in resource name or in any tag(label) key or value
+      # Considers \d (digit) as the Max Age (in digit_unit) for which the resource is expected to live
+      # e.g. a tag like dnd_3 and here would mean 3 days to expected expiry time
+
 
 filter_combination:
   join_rule: (F0001 and F0002 and F0003)
