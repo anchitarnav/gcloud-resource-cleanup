@@ -1,63 +1,36 @@
 ---
-version: 001
 rule_id: R_ABC_00001
 
-rule_meta:
-  name: Example Rule 01.    # This can be  anything
-  created_by: aarnav
-  creation_timestamp: 15-Dec-2020  13:23:32 UTC+05:30   # ISO to  be decided
-  cloud_type: GCLOUD
-  tags:
-    purpose: test
-  labels:
-    - happy_rule
-    - good_rule
+# This is a template rule, that exhibit what kind of filters are supported by the app
 
 
+# The following resource types are supported. You can choose any combination
 resource_types:
   - compute_v1_instances
+  - sql_v1beta4_instances
+  - redis_v1_instances
+  - storage_v1_b
 
-rule_lifecycle:
-  type: ONE-TIME  # PERSIST /  ONE-TIME
-  creation_epoch: 1587049503004  # 13 dig. milli secs
-  expiry_time: 20-Dec-2020 13:42:34 UTC+05:30
-  enable_time: 17-Dec-2020 13:42:34 UTC+05:30
 
 
 filter_criterion:
   - filter_id: F0001
-    filter_name: Filter 1
+    filter_name: Detects everything that has john in its name
     filter_type: NAME # Must be one from pre-configured values
-    required: false
     filter_data:
-      name_regex: ".*terraform.*"
+      name_regex: ".*john.*"
 
-  - filter_id: F0003
-    filter_name: Filter 3
-    filter_type: CREATION_TIME # Must be one from pre-configured values
-    requried: false
-    filter_data:
-      creation_time: 1587049503004
-      qualification: >
 
-  - filter_id: F0004
-    filter_name: Filter 5
+  - filter_id: F0002
+    filter_name: Detects rresources that have Age of more than 3 hours
     filter_type: AGE # Must be one from pre-configured values
     requried: false
     filter_data:
       age: 3
-      unit: hours
+      unit: hours # allowed values -> hours / days
 
-  - filter_id: F0005
-    filter_name: Filter 4
-    filter_type: PROJECT_IDS # Must be one from pre-configured values
-    requried: true
-    filter_data:
-      project_ids:
-        - durable-trainer-251010
-        - gcp-ingestion-playground
 
-  - filter_id: F0006
+  - filter_id: F0003
     filter_name: Filter 6
     filter_type: TAG # Must be one from pre-configured values
     requried: false
@@ -68,7 +41,7 @@ filter_criterion:
       # If just key is present, match key
       # If key and value are present, match key and value
 
-  - filter_id: F0007
+  - filter_id: F0004
       filter_name: Filter 7
       filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
       requried: false
@@ -79,6 +52,7 @@ filter_criterion:
       # Considers \d (digit) as the Max Age (in digit_unit) for which the resource is expected to live
       # e.g. a tag like dnd_3 and here would mean 3 days to expected expiry time
 
-
+# Sample filter combination
 filter_combination:
-  join_rule: (F0001 and F0002 and F0003)
+  join_rule: (F0001 and F0002 and not (F0003 or F0004))
+  # Can be any python evaluable string that can give a boolean. #bool(eval(join_rule))
