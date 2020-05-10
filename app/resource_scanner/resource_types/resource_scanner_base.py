@@ -1,6 +1,6 @@
-from resource_scanner.filter_lib import FilterLib
+from app.resource_scanner.filter_lib import FilterLib
 from library.gcloud_accessor.gcloud import Gcloud
-from scan_rules.rules_accessor import RulesAccessor
+from app.scan_rules.rules_accessor import RulesAccessor
 
 
 class ResourceScannerBase:

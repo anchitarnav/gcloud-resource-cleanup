@@ -1,7 +1,7 @@
 import iso8601
 import time
 
-from resource_scanner.resource_types.resource_scanner_base import ResourceScannerBase
+from app.resource_scanner.resource_types.resource_scanner_base import ResourceScannerBase
 
 return_format = [
     {

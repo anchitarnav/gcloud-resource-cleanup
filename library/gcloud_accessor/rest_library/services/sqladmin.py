@@ -5,7 +5,7 @@ import socket
 import googleapiclient.discovery
 import googleapiclient.errors
 
-from gcloud_rest_lib_base import GcloudRestLibBase
+from library.gcloud_accessor.rest_library.shared.gcloud_rest_lib_base import GcloudRestLibBase
 from library.utilities.exceptions import ApplicationException
 from library.utilities.logger import get_logger
 

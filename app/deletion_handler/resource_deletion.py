@@ -1,4 +1,4 @@
-from logger import get_logger
+from library.utilities.logger import get_logger
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
 

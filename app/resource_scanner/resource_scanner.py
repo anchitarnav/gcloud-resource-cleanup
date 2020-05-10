@@ -1,5 +1,5 @@
 from library.utilities.exceptions import ApplicationException
-from resource_scanner.resource_types.gcloud.instances.instances import GcloudInstancesScanner
+from app.resource_scanner.resource_types.gcloud.instances.instances import GcloudInstancesScanner
 
 
 class ResourceScanner(GcloudInstancesScanner):
