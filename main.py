@@ -12,10 +12,8 @@ if __name__ == '__main__':
     if RUN_AS_FLASK_APP:
         app.run(host='127.0.0.1', port=8080, debug=True)
     else:
-        import secrets
-
         rules_to_run = ['R_ABC_00003']
-        project_ids = secrets.all_project_ids
+        project_ids = ['example-project-id']
         logger.info(f'Recieved request to scan project IDs: {project_ids} for rules {rules_to_run}')
 
         logger.info('Initiating resource scan ..')

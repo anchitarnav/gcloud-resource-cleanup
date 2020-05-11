@@ -6,9 +6,9 @@ import googleapiclient.errors
 
 
 class ResourceDeletionHandler:
-    def __init__(self):
+    def __init__(self, project_id):
         self.logger = get_logger(__file__.replace('py', ''))
-        self.gcloud_lib = Gcloud()
+        self.gcloud_lib = Gcloud(project_id=project_id)
 
     def delete_stack(self, iterable):
         """

@@ -8,8 +8,8 @@ from library.utilities.logger import get_logger
 class DependencyResolver:
     logger = get_logger('dependency_resolver')
 
-    def __init__(self):
-        self.gcloud_lib = Gcloud()
+    def __init__(self, project_id):
+        self.gcloud_lib = Gcloud(project_id=project_id)
 
     def resolve_dependencies(self, resource_type, resource_id):
         resolver_function = getattr(self, f'dependency_resolver__{resource_type}')
