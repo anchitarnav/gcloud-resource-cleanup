@@ -2,6 +2,8 @@ import os
 import yaml
 
 from google.cloud import storage
+from pathlib import Path
+
 from library.utilities.exceptions import ApplicationException
 from library.utilities.logger import get_logger
 
@@ -9,7 +11,7 @@ RULES_BUCKET_NAME = os.environ.get('RULES_BUCKET_NAME')
 
 
 class RulesAccessor:
-    one_time_folder = 'app/scan_rules/one-time'
+    one_time_folder = os.path.join(str(Path(os.path.realpath(__file__)).parent), 'one-time')
     logger = get_logger(__name__)
 
     def __init__(self):
@@ -46,9 +48,9 @@ class RulesAccessor:
 
         # self.all_yaml_files.extend(os.listdir('scan_rules/persistent'))
 
-    def get_rule_by_id(self, rule_id):
+    def get_rule_by_id(self, rule_id, suppress_exception=False):
         rule = self.all_rules.get(rule_id)
-        if not rule:
+        if not suppress_exception and not rule:
             self.logger.error(f'Rule {rule_id} not Found !')
             self.logger.error(f"Valid rules are {list(self.all_rules.keys())}")
             raise ApplicationException("Rule not Found !!")
