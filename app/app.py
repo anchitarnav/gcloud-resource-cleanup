@@ -8,6 +8,7 @@ logger = get_logger(__name__)
 
 
 def delete_scanned_resources(all_scanned_resources):
+    all_results = []
 
     for project_id, project_data in all_scanned_resources.items():
         dependency_resolver = DependencyResolver(project_id=project_id)
@@ -15,14 +16,17 @@ def delete_scanned_resources(all_scanned_resources):
 
         for scanned_resource_type, scanned_resources in project_data.items():
             for resource in scanned_resources:
-                logger.debug(f'Beginning resource deletion for {resource}')
+                logger.info(f'Beginning resource deletion for {resource}')
                 logger.debug('Initiating dependency scanner')
                 dependency_stack = dependency_resolver.resolve_dependencies(
                     resource_id=resource['resource_id'], resource_type=scanned_resource_type)
                 logger.debug(f"Dependency stack => {dependency_stack}")
                 dependency_stack.reverse()
                 res = deletion_handler.delete_stack(dependency_stack)
-                print(res)
+                all_results.append(res)
+                logger.info(f'Resource deletion for resource {resource} ended with status {res}')
+
+    return bool(all_results and False not in all_results)
 
 
 def scan_resources(rules, project_ids):

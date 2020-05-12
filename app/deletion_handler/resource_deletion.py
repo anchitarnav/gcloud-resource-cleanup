@@ -1,6 +1,7 @@
 from library.utilities.logger import get_logger
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
+from library.utilities.exceptions import ApplicationException
 
 import googleapiclient.errors
 
@@ -36,6 +37,10 @@ class ResourceDeletionHandler:
             try:
                 delete_result = deletion_function(resource_id)
             except googleapiclient.errors.Error as ex:
+                delete_result = False
+                self.logger.exception("Exception occurred during deletion of stack .. ")
+                self.logger.exception(ex)
+            except ApplicationException as ex:
                 delete_result = False
                 self.logger.exception("Exception occurred during deletion of stack .. ")
                 self.logger.exception(ex)

@@ -26,5 +26,11 @@ def scan(project_id, rule_id):
     return f"{json.dumps(scanned_resources)}"
 
 
-def scan_and_delete():
-    pass
+@app.route('/delete/<project_id>/<rule_id>')
+def scan_and_delete(project_id, rule_id):
+    scanned_resources = scan_resources(rules=[rule_id], project_ids=[project_id])
+    delete_response = delete_scanned_resources(all_scanned_resources=scanned_resources)
+    if delete_response:
+        return "Deletion Successful", 200
+    else:
+        return "Server Encountered an Error while deleting", 501

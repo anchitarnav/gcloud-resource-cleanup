@@ -1,0 +1,4 @@
+runtime: python37
+service: gcloud-resource-cleanup-01
+env_variables:
+  RULES_BUCKET_NAME: 'gcp-cleanup-rules'
