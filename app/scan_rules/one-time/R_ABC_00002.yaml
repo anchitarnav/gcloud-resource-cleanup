@@ -3,7 +3,7 @@ version: 001
 rule_id: R_ABC_00002
 
 rule_meta:
-  name: Example Rule 01.    # This can be  anything
+  name: Identifies all resources created by Automation. Existing for more than 6 hours
   created_by: aarnav
   creation_timestamp: 15-Dec-2020  13:23:32 UTC+05:30   # ISO to  be decided
   cloud_type: GCLOUD
@@ -27,8 +27,24 @@ filter_criterion:
     filter_type: NAME # Must be one from pre-configured values
     required: false
     filter_data:
-      name_regex: ".*aarnav.*"
+      name_regex: "terraform"
+
+  - filter_id: F0002
+    filter_name: Filter 6
+    filter_type: TAG # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      key: 'created_by'  # Accepts valid python regex
+      value: 'automation'  # Accepts regex # Optional
+
+  - filter_id: F0005
+    filter_name: Filter 5
+    filter_type: AGE # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      age: 6
+      unit: hours
 
 
 filter_combination:
-  join_rule: (F0001)
+  join_rule: (F0005 and (F0001 or F0002))

@@ -3,7 +3,7 @@ version: 001
 rule_id: R_ABC_00004
 
 rule_meta:
-  name: Qualify all resources that are don't have a dnd literal and have age > 24 hours
+  name: Qualify all resources that don't have a dnd literal and have age > 24 hours
   created_by: aarnav
   creation_timestamp: 6-May-2020  15:23:32 UTC+05:30   # ISO to  be decided
   cloud_type: GCLOUD
@@ -28,6 +28,13 @@ filter_criterion:
     required: false
     filter_data:
       name_regex: 'dnd_\d+'
+
+  - filter_id: F0015
+    filter_name: Check resource with dnd_digit in them
+    filter_type: NAME # Must be one from pre-configured values
+    required: false
+    filter_data:
+      name_regex: 'dnd-\d+'
 
   - filter_id: F0002
     filter_name: Check all resource with tag like dnd_digit
@@ -56,4 +63,4 @@ filter_criterion:
 
 
 filter_combination:
-  join_rule: (F0004 and not (F0001 or F0002 or F0003))
+  join_rule: (F0004 and not (F0001 or F0002 or F0003 or F0015))

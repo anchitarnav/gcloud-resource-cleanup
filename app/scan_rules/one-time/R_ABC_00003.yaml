@@ -3,7 +3,7 @@ version: 001
 rule_id: R_ABC_00003
 
 rule_meta:
-  name: Example Rule 01.    # This can be  anything
+  name: Resources that have a dnd literal and indicated time on it has expired
   created_by: aarnav
   creation_timestamp: 15-Dec-2020  13:23:32 UTC+05:30   # ISO to  be decided
   cloud_type: GCLOUD
@@ -22,13 +22,21 @@ rule_lifecycle:
 
 
 filter_criterion:
-  - filter_id: F0006
-    filter_name: Filter 6
-    filter_type: TAG # Must be one from pre-configured values
-    requried: false
-    filter_data:
-      key: 'aarnav'  # Accepts valid python regex
+  - filter_id: F0001
+      filter_name: Filter 7
+      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+      requried: false
+      filter_data:
+        expected_regex: 'dnd_\d+'
+        digit_unit: days  # Allowed Values: hours/days
 
+  - filter_id: F0002
+      filter_name: Filter 7
+      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+      requried: false
+      filter_data:
+        expected_regex: 'dnd-\d+'
+        digit_unit: days  # Allowed Values: hours/days
 
 filter_combination:
-  join_rule: (F0006)
+  join_rule: (F0001)
