@@ -23,20 +23,20 @@ rule_lifecycle:
 
 filter_criterion:
   - filter_id: F0001
-      filter_name: Filter 7
-      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
-      requried: false
-      filter_data:
-        expected_regex: 'dnd_\d+'
-        digit_unit: days  # Allowed Values: hours/days
+    filter_name: Filter 7
+    filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      expected_regex: 'dnd_\d+'
+      digit_unit: days  # Allowed Values: hours/days
 
   - filter_id: F0002
-      filter_name: Filter 7
-      filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
-      requried: false
-      filter_data:
-        expected_regex: 'dnd-\d+'
-        digit_unit: days  # Allowed Values: hours/days
+    filter_name: Filter 7
+    filter_type: AUTODETECT_DECLARED_EXPIRY # Must be one from pre-configured values
+    requried: false
+    filter_data:
+      expected_regex: 'dnd-\d+'
+      digit_unit: days  # Allowed Values: hours/days
 
 filter_combination:
   join_rule: (F0001)
