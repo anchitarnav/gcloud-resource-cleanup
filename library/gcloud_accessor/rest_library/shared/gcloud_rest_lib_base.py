@@ -40,8 +40,12 @@ class GcloudRestLibBase:
             time.sleep(self.operation_polling_time_sleep_secs)
             self.logger.debug("Making post call for operation status on wait endpoint ..")
             operation_response = self.session.post(operation_self_link + "/wait")
+            self.logger.error(f'Recieved operation response: {operation_response.text}')
             if not operation_response.status_code == codes.ok:
-                self.logger.error(f'Error while polling for operation {operation_response.text}')
+                if operation_response.status_code == codes.not_found:
+                    self.logger.debug('Apprehending 404 not found  as ')
+                    return True
+                self.logger.error(f'Error while polling for operation')
                 return False
             operation = operation_response.json()
             operation_status = operation['status']
@@ -57,11 +61,18 @@ class GcloudRestLibBase:
     def delete_self_link(self, self_link, delete_dependencies=True):
         max_retries = 5
         count = 0
+        self.logger.debug(f'Received request to delete: {self_link}')
 
         while count < max_retries:
             count += 1
+            self.logger.debug(f"Attempt #{count}")
+
+            if count > 1:
+                self.logger.debug(f"Sleeping  for {self.operation_polling_time_sleep_secs} secs before re-attempting")
+                time.sleep(self.operation_polling_time_sleep_secs)
+
             del_response = self.session.delete(self_link)
-            print(del_response)
+            self.logger.info(del_response.status_code)
 
             # Apprehending 404 not_found as resource already deleted
             if del_response.status_code == codes.not_found:
@@ -70,8 +81,8 @@ class GcloudRestLibBase:
 
             # If response == 400, trying to check if it a resourceInUseByAnotherResource and resolve it
             if del_response.status_code == codes.bad_request:
-                self.logger.info("Bad Request on delete request. Trying to debug it .. ")
-                self.logger.info(f"Response text : {del_response.text}")
+                self.logger.debug("Bad Request on delete request. Trying to debug it .. ")
+                self.logger.debug(f"Response text : {del_response.text}")
                 try:
                     self.logger.debug("Decoding Error JSON")
                     response_json = del_response.json()
@@ -102,9 +113,6 @@ class GcloudRestLibBase:
                 except KeyError:
                     pass
 
-            # Anything in 400 and 500 series
-            del_response.raise_for_status()
-
             # Checking if an operation object was returned
             try:
                 response_json = del_response.json()
@@ -112,5 +120,8 @@ class GcloudRestLibBase:
                     return self.wait_for_operation(operation=response_json)
             except ValueError:
                 pass
+
+        # Anything in 400 and 500 series
+        del_response.raise_for_status()
 
         return True

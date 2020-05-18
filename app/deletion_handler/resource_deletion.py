@@ -14,6 +14,7 @@ class ResourceDeletionHandler:
     def delete_stack_v2(self, iterable):
         all_status = []
         for self_link in iterable:
+            self.logger.info(f"Beginning deletion for {self_link}")
             try:
                 delete_result = self.gcloud_lib.delete_self_link(self_link=self_link)
             except googleapiclient.errors.Error as ex:
@@ -24,9 +25,10 @@ class ResourceDeletionHandler:
                 delete_result = False
                 self.logger.exception("Exception occurred during deletion of stack .. ")
                 self.logger.exception(ex)
+            self.logger.info(f'Deletion response for {self_link} : {delete_result}')
             all_status.append(delete_result)
 
-        return bool(all_status) and False not in all_status
+        return False not in all_status
 
     def delete_stack(self, iterable):
         """

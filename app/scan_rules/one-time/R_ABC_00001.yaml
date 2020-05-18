@@ -23,11 +23,11 @@ rule_lifecycle:
 
 filter_criterion:
   - filter_id: F0001
-    filter_name: Filter 6
-    filter_type: TAG # Must be one from pre-configured values
-    requried: false
+    filter_name: Filter 1
+    filter_type: NAME # Must be one from pre-configured values
+    required: false
     filter_data:
-      key: 'goog-gke-node'  # Accepts valid python regex
+      name_regex: "aarnav"
 
 
 filter_combination:
