@@ -22,11 +22,12 @@ def delete_scanned_resources(all_scanned_resources):
                     resource_id=resource['resource_id'], resource_type=scanned_resource_type)
                 logger.debug(f"Dependency stack => {dependency_stack}")
                 dependency_stack.reverse()
-                res = deletion_handler.delete_stack(dependency_stack)
+                # res = deletion_handler.delete_stack(dependency_stack)
+                res = deletion_handler.delete_stack_v2(dependency_stack)
                 all_results.append(res)
                 logger.info(f'Resource deletion for resource {resource} ended with status {res}')
 
-    return bool(all_results and False not in all_results)
+    return False not in all_results
 
 
 def scan_resources(rules, project_ids):

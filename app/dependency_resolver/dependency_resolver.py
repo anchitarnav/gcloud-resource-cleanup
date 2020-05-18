@@ -1,4 +1,5 @@
 import re
+import googleapiclient.errors
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
 from library.utilities.exceptions import ApplicationException
@@ -27,7 +28,14 @@ class DependencyResolver:
         instance_name = self_link_values.get('instances')
 
         # Get list of resources referring to this instance (dependencies)
-        instance_referrers = self.gcloud_lib.list_referrers_of_instance(zone=zone, instance=instance_name)
+        try:
+            instance_referrers = self.gcloud_lib.list_referrers_of_instance(zone=zone, instance=instance_name)
+        except googleapiclient.errors.HttpError as ex:
+            if int(ex.resp['status']) == 404:
+                self.logger.debug('Assuming 404 to be resource already deleted')
+                return []
+            else:
+                raise ex
 
         # If there are no dependencies, the instance is idependent
         if 'items' not in instance_referrers:
@@ -203,8 +211,3 @@ class DependencyResolver:
                 to_return_stack.append(http_proxy['selfLink'])
 
         return to_return_stack
-
-
-if __name__ == "__main__":
-    dependency_resolver = DependencyResolver()
-    dependency_resolver.resolve_dependencies(resource_type='instances', resource_id='')

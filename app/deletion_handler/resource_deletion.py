@@ -11,6 +11,23 @@ class ResourceDeletionHandler:
         self.logger = get_logger(__file__.replace('py', ''))
         self.gcloud_lib = Gcloud(project_id=project_id)
 
+    def delete_stack_v2(self, iterable):
+        all_status = []
+        for self_link in iterable:
+            try:
+                delete_result = self.gcloud_lib.delete_self_link(self_link=self_link)
+            except googleapiclient.errors.Error as ex:
+                delete_result = False
+                self.logger.exception("Exception occurred during deletion of stack .. ")
+                self.logger.exception(ex)
+            except ApplicationException as ex:
+                delete_result = False
+                self.logger.exception("Exception occurred during deletion of stack .. ")
+                self.logger.exception(ex)
+            all_status.append(delete_result)
+
+        return bool(all_status) and False not in all_status
+
     def delete_stack(self, iterable):
         """
         :param iterable: an iterable with self_link as strings
