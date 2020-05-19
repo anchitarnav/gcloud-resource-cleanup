@@ -13,6 +13,9 @@ rule_meta:
     - happy_rule
     - good_rule
 
+resource_types:
+  - compute_v1_instances
+  - sql_v1beta4_instances
 
 rule_lifecycle:
   type: ONE-TIME  # PERSIST /  ONE-TIME

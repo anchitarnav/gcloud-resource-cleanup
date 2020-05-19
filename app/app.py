@@ -36,6 +36,6 @@ def scan_resources(rules, project_ids):
     for project_id in project_ids:
         resource_scanner = ResourceScanner(project_id=project_id)
         all_scanned_resources[project_id] = resource_scanner.scan_all_resources(
-            resource_types=['instances'], rules=rules, project_id=project_id
+            rules=rules, project_id=project_id
         )
     return all_scanned_resources

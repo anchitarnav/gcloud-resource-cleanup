@@ -1,0 +1,30 @@
+cron:
+  - description: "Compute Instances created by Automation existing for more than 6 hours"
+    url: /delete/durable-trainer-251010/R_ABC_00002
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01
+
+  - description: "Compute Instances have a dnd literal and indicated time on it has expired"
+    url: /delete/durable-trainer-251010/R_ABC_00003
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01
+
+  - description: "Compute Instances that don't have a dnd literal and have age more than 24 hours"
+    url: /delete/durable-trainer-251010/R_ABC_00004
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01
+
+  - description: "Compute Instances created by Automation existing for more than 6 hours"
+    url: /delete/gcp-ingestion-playground/R_ABC_00002
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01
+
+  - description: "Compute Instances have a dnd literal and indicated time on it has expired"
+    url: /delete/gcp-ingestion-playground/R_ABC_00003
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01
+
+  - description: "Compute Instances that don't have a dnd literal and have age more than 24 hours"
+    url: /delete/gcp-ingestion-playground/R_ABC_00004
+    schedule: every 5 mins
+    target: gcloud-resource-cleanup-01

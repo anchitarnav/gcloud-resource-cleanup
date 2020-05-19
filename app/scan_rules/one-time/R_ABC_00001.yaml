@@ -13,6 +13,9 @@ rule_meta:
     - happy_rule
     - good_rule
 
+resource_types:
+  - compute_v1_instances
+  - sql_v1beta4_instances
 
 rule_lifecycle:
   type: ONE-TIME  # PERSIST /  ONE-TIME
@@ -27,7 +30,7 @@ filter_criterion:
     filter_type: NAME # Must be one from pre-configured values
     required: false
     filter_data:
-      name_regex: "aarnav"
+      name_regex: "aarnav-deletion-test"
 
 
 filter_combination:

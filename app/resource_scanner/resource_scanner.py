@@ -1,15 +1,23 @@
 from library.utilities.exceptions import ApplicationException
-from app.resource_scanner.resource_types.gcloud.instances.instances import GcloudInstancesScanner
+from app.resource_scanner.resource_types.gcloud.compute.compute_v1_instances import Scanner__Compute_V1_Instances
+from app.resource_scanner.resource_types.gcloud.sql.sql_v1beta4_instances import Scanner__Sql_V1beta4_Instances
 
 
-class ResourceScanner(GcloudInstancesScanner):
+class ResourceScanner(Scanner__Compute_V1_Instances, Scanner__Sql_V1beta4_Instances):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def scan_all_resources(self, resource_types, rules, **kwargs):
-        # TODO: validate resource_types against a pre-created list
+    def get_resource_types_for_all_rules(self, rules):
+        all_required_resource_types = set()
+        for rule_id in rules:
+            rule = self.rules_accessor.get_rule_by_id(rule_id=rule_id)
+            all_required_resource_types.update(rule['resource_types'])
+        return all_required_resource_types
+
+    def scan_all_resources(self, rules, **kwargs):
         # TODO: Break down in modular functions
         all_qualifying_resources = dict()
+        resource_types = self.get_resource_types_for_all_rules(rules=rules)
         for resource_type in resource_types:
             if resource_type not in all_qualifying_resources:
                 all_qualifying_resources[resource_type] = list()

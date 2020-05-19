@@ -16,7 +16,10 @@ class DependencyResolver:
         resolver_function = getattr(self, f'dependency_resolver__{resource_type}')
         return resolver_function(resource_id=resource_id)
 
-    def dependency_resolver__instances(self, resource_id):
+    def dependency_resolver__sql_v1beta4_instances(self, resource_id):
+        return [resource_id]
+
+    def dependency_resolver__compute_v1_instances(self, resource_id):
         #  The stack to return at end
         dependency_stack = [resource_id]
 
@@ -60,7 +63,7 @@ class DependencyResolver:
 
         return dependency_stack
 
-    def dependency_resolver__instanceGroups(self, resource_id):
+    def dependency_resolver__compute_v1_instanceGroups(self, resource_id):
         """
         :param resource_id: Expected to be selfLink of an instanceGroup
         :return: List of dependent resources. List containing self if no dependents
@@ -136,7 +139,7 @@ class DependencyResolver:
 
         return to_return_stack
 
-    def dependency_resolver__backendServices(self, resource_id):
+    def dependency_resolver__compute_v1_backendServices(self, resource_id):
         """
         Check for resources that refer this backendService and return them
         :param resource_id: Expected to be selfLink of BackendService
@@ -191,7 +194,7 @@ class DependencyResolver:
 
         return to_return_stack
 
-    def dependency_resolver__urlMaps(self, resource_id):
+    def dependency_resolver__compute_v1_urlMaps(self, resource_id):
         to_return_stack = [resource_id]
 
         # 1. Checking http Proxies where this url map is listed
