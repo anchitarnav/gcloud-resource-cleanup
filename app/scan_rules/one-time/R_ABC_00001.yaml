@@ -16,6 +16,7 @@ rule_meta:
 resource_types:
   - compute_v1_instances
   - sql_v1beta4_instances
+  - redis_v1_instances
 
 rule_lifecycle:
   type: ONE-TIME  # PERSIST /  ONE-TIME

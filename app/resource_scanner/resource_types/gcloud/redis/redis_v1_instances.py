@@ -13,11 +13,11 @@ return_format = [
 ]
 
 
-class Scanner__Compute_V1_Instances(ResourceScannerBase):
+class Scanner__Redis_V1_Instances(ResourceScannerBase):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def resource_scanner__compute_v1_instances(self, **kwargs):
+    def resource_scanner__redis_v1_instances(self, **kwargs):
         """
         Filters resources that comply to the given rules
         :param gcloud_client:
@@ -25,16 +25,16 @@ class Scanner__Compute_V1_Instances(ResourceScannerBase):
         :return: Dict to qualifying resources in specified format
         """
         to_return = list()
-        all_instances_response = self.gcloud_client.list_all_compute_instances()
-        all_instances = []
-        for zone_name in all_instances_response['items']:
-            if 'instances' in all_instances_response['items'][zone_name]:
-                all_instances.extend(all_instances_response['items'][zone_name]['instances'])
+        all_instances = self.gcloud_client.list_all_redis_instances()
 
-        for instance in all_instances:
-            instance_name = instance['name']
-            instance_age = int(time.time() - iso8601.parse_date(instance['creationTimestamp']).timestamp())
+        for instance in all_instances.get('instances', []):
+            instance_name = instance['name'].split('/')[-1]
+            # Name Expected Format: projects/{projectId}/locations/{locationId}/instances/{instanceId}
+
+            instance_age = int(time.time() - iso8601.parse_date(instance['createTime']).timestamp())
             instance_tags = instance.get('labels', {})
+            instance_self_link = f"https://redis.googleapis.com/v1/{instance['name']}"
+
             instance_literals = [
                 literal
                 for possible_literals in (instance_tags.keys(), instance_tags.values(), [instance_name])
@@ -42,7 +42,7 @@ class Scanner__Compute_V1_Instances(ResourceScannerBase):
             ]
 
             temp_dict = {
-                "resource_id": instance['selfLink'],
+                "resource_id": instance_self_link,
                 "filter_data": {
                     # Instance Name
                     "NAME": instance_name,

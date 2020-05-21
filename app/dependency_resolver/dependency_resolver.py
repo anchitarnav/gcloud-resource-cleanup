@@ -19,6 +19,9 @@ class DependencyResolver:
     def dependency_resolver__sql_v1beta4_instances(self, resource_id):
         return [resource_id]
 
+    def dependency_resolver__redis_v1_instances(self, resource_id):
+        return [resource_id]
+
     def dependency_resolver__compute_v1_instances(self, resource_id):
         #  The stack to return at end
         dependency_stack = [resource_id]
