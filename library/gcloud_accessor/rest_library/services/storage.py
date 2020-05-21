@@ -15,6 +15,9 @@ class GcloudStorageV1(GcloudRestLibBase):
     def list_all_storage_buckets(self):
         return self.storage_service.buckets().list(project=self.project_id).execute()
 
+    def list_all_objects(self, bucket_name):
+        return self.storage_service.objects().list(bucket=bucket_name).execute()
+
 
 if __name__ == "__main__":
     gc = GcloudStorageV1(project_id='')

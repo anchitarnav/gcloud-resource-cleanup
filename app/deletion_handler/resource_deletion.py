@@ -4,6 +4,7 @@ from library.utilities.misc import parse_link, get_resource_type
 from library.utilities.exceptions import ApplicationException
 
 import googleapiclient.errors
+import requests.exceptions
 
 
 class ResourceDeletionHandler:
@@ -13,20 +14,24 @@ class ResourceDeletionHandler:
 
     def delete_stack_v2(self, iterable):
         all_status = []
-        for self_link in iterable:
-            self.logger.info(f"Beginning deletion for {self_link}")
-            try:
+        try:
+            for self_link in iterable:
+                self.logger.info(f"Beginning deletion for {self_link}")
                 delete_result = self.gcloud_lib.delete_self_link(self_link=self_link)
-            except googleapiclient.errors.Error as ex:
-                delete_result = False
-                self.logger.exception("Exception occurred during deletion of stack .. ")
-                self.logger.exception(ex)
-            except ApplicationException as ex:
-                delete_result = False
-                self.logger.exception("Exception occurred during deletion of stack .. ")
-                self.logger.exception(ex)
-            self.logger.info(f'Deletion response for {self_link} : {delete_result}')
-            all_status.append(delete_result)
+                self.logger.info(f'Deletion response for {self_link} : {delete_result}')
+                all_status.append(delete_result)
+        except googleapiclient.errors.Error as ex:
+            all_status.append(False)
+            self.logger.exception("Exception occurred during deletion of stack .. ")
+            self.logger.exception(ex)
+        except requests.exceptions.HTTPError as ex:
+            all_status.append(False)
+            self.logger.exception("Exception occurred during deletion of stack .. ")
+            self.logger.exception(ex)
+        except ApplicationException as ex:
+            all_status.append(False)
+            self.logger.exception("Exception occurred during deletion of stack .. ")
+            self.logger.exception(ex)
 
         return False not in all_status
 

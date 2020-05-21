@@ -23,7 +23,10 @@ class DependencyResolver:
         return [resource_id]
 
     def dependency_resolver__storage_v1_b(self, resource_id):
-        return [resource_id]
+        # check if there are any objects inside and add them all as dependencies
+        all_objects_in_bucket = self.gcloud_lib.list_all_objects(
+            bucket_name=parse_link(self_link=resource_id)['resource_name'])
+        return [resource_id] + [obj['selfLink'] for obj in all_objects_in_bucket.get('items', [])]
 
     def dependency_resolver__compute_v1_instances(self, resource_id):
         #  The stack to return at end

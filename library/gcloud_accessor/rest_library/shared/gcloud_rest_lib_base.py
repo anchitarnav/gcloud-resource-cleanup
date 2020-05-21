@@ -2,7 +2,7 @@ from library.utilities.misc import parse_link, get_resource_type
 from library.utilities.logger import get_logger
 from google.auth.transport.requests import AuthorizedSession
 from google.auth import default
-from requests import codes
+from requests import codes, exceptions
 
 import time
 import re
@@ -122,6 +122,10 @@ class GcloudRestLibBase:
                 pass
 
         # Anything in 400 and 500 series
-        del_response.raise_for_status()
+        try:
+            del_response.raise_for_status()
+        except exceptions.HTTPError as ex:
+            self.logger.exception(del_response.text)
+            raise ex
 
         return True
