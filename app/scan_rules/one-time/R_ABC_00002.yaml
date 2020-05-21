@@ -17,6 +17,7 @@ resource_types:
   - compute_v1_instances
   - sql_v1beta4_instances
   - redis_v1_instances
+  - storage_v1_b
 
 rule_lifecycle:
   type: ONE-TIME  # PERSIST /  ONE-TIME

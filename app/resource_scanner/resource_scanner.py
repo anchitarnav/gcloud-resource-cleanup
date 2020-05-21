@@ -2,9 +2,11 @@ from library.utilities.exceptions import ApplicationException
 from app.resource_scanner.resource_types.gcloud.compute.compute_v1_instances import Scanner__Compute_V1_Instances
 from app.resource_scanner.resource_types.gcloud.sql.sql_v1beta4_instances import Scanner__Sql_V1beta4_Instances
 from app.resource_scanner.resource_types.gcloud.redis.redis_v1_instances import Scanner__Redis_V1_Instances
+from app.resource_scanner.resource_types.gcloud.storage.storage_v1_b import Scanner__Storage_V1_B
 
 
-class ResourceScanner(Scanner__Compute_V1_Instances, Scanner__Sql_V1beta4_Instances, Scanner__Redis_V1_Instances):
+class ResourceScanner(Scanner__Compute_V1_Instances, Scanner__Sql_V1beta4_Instances, Scanner__Redis_V1_Instances,
+                      Scanner__Storage_V1_B):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 

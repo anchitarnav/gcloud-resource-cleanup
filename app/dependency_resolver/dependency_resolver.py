@@ -22,6 +22,9 @@ class DependencyResolver:
     def dependency_resolver__redis_v1_instances(self, resource_id):
         return [resource_id]
 
+    def dependency_resolver__storage_v1_b(self, resource_id):
+        return [resource_id]
+
     def dependency_resolver__compute_v1_instances(self, resource_id):
         #  The stack to return at end
         dependency_stack = [resource_id]
