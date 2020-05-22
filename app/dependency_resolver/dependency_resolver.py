@@ -1,4 +1,5 @@
 import re
+import googleapiclient.errors
 from library.gcloud_accessor.gcloud import Gcloud
 from library.utilities.misc import parse_link, get_resource_type
 from library.utilities.exceptions import ApplicationException
@@ -8,14 +9,26 @@ from library.utilities.logger import get_logger
 class DependencyResolver:
     logger = get_logger('dependency_resolver')
 
-    def __init__(self):
-        self.gcloud_lib = Gcloud()
+    def __init__(self, project_id):
+        self.gcloud_lib = Gcloud(project_id=project_id)
 
     def resolve_dependencies(self, resource_type, resource_id):
         resolver_function = getattr(self, f'dependency_resolver__{resource_type}')
         return resolver_function(resource_id=resource_id)
 
-    def dependency_resolver__instances(self, resource_id):
+    def dependency_resolver__sql_v1beta4_instances(self, resource_id):
+        return [resource_id]
+
+    def dependency_resolver__redis_v1_instances(self, resource_id):
+        return [resource_id]
+
+    def dependency_resolver__storage_v1_b(self, resource_id):
+        # check if there are any objects inside and add them all as dependencies
+        all_objects_in_bucket = self.gcloud_lib.list_all_objects(
+            bucket_name=parse_link(self_link=resource_id)['resource_name'])
+        return [resource_id] + [obj['selfLink'] for obj in all_objects_in_bucket.get('items', [])]
+
+    def dependency_resolver__compute_v1_instances(self, resource_id):
         #  The stack to return at end
         dependency_stack = [resource_id]
 
@@ -27,7 +40,14 @@ class DependencyResolver:
         instance_name = self_link_values.get('instances')
 
         # Get list of resources referring to this instance (dependencies)
-        instance_referrers = self.gcloud_lib.list_referrers_of_instance(zone=zone, instance=instance_name)
+        try:
+            instance_referrers = self.gcloud_lib.list_referrers_of_instance(zone=zone, instance=instance_name)
+        except googleapiclient.errors.HttpError as ex:
+            if int(ex.resp['status']) == 404:
+                self.logger.debug('Assuming 404 to be resource already deleted')
+                return []
+            else:
+                raise ex
 
         # If there are no dependencies, the instance is idependent
         if 'items' not in instance_referrers:
@@ -52,7 +72,7 @@ class DependencyResolver:
 
         return dependency_stack
 
-    def dependency_resolver__instanceGroups(self, resource_id):
+    def dependency_resolver__compute_v1_instanceGroups(self, resource_id):
         """
         :param resource_id: Expected to be selfLink of an instanceGroup
         :return: List of dependent resources. List containing self if no dependents
@@ -128,7 +148,7 @@ class DependencyResolver:
 
         return to_return_stack
 
-    def dependency_resolver__backendServices(self, resource_id):
+    def dependency_resolver__compute_v1_backendServices(self, resource_id):
         """
         Check for resources that refer this backendService and return them
         :param resource_id: Expected to be selfLink of BackendService
@@ -183,7 +203,7 @@ class DependencyResolver:
 
         return to_return_stack
 
-    def dependency_resolver__urlMaps(self, resource_id):
+    def dependency_resolver__compute_v1_urlMaps(self, resource_id):
         to_return_stack = [resource_id]
 
         # 1. Checking http Proxies where this url map is listed
@@ -203,8 +223,3 @@ class DependencyResolver:
                 to_return_stack.append(http_proxy['selfLink'])
 
         return to_return_stack
-
-
-if __name__ == "__main__":
-    dependency_resolver = DependencyResolver()
-    dependency_resolver.resolve_dependencies(resource_type='instances', resource_id='')

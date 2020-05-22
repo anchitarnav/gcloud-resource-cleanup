@@ -16,10 +16,10 @@ class GcloudSqlAdmin(GcloudRestLibBase):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.sqladmin_instance = googleapiclient.discovery.build('sqladmin', 'v1beta4', cache_discovery=False)
 
     def list_sql_instances(self):
-        return googleapiclient.discovery.build('sqladmin', 'v1beta4', cache_discovery=False).instances().list(
-            project='durable-trainer-251010').execute()
+        return self.sqladmin_instance.instances().list(project=self.project_id).execute()
 
 
 if __name__ == "__main__":

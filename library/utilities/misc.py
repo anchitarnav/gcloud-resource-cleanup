@@ -39,12 +39,12 @@ def parse_link(self_link, extra_expected_values=()):
         values['resource_name'] = parsed_values[1]
 
     if values['api_name'] and values['api_version'] and values['partial_resource_type']:
-        values['full_resource_type'] = f"{values['api_name']}.{values['api_version']}.{values['partial_resource_type']}"
+        values['full_resource_type'] = f"{values['api_name']}_{values['api_version']}_{values['partial_resource_type']}"
 
     return values
 
 
 def get_resource_type(self_link):
-    return self_link.split("/")[-2]
+    return parse_link(self_link)['full_resource_type']
+    # return self_link.split("/")[-2]
     # TODO: Validate against valid resource types before returning
-    # If gke in result, its a kubernetes cluster

@@ -1,15 +1,131 @@
-# TODO: Remove secrets import.
-import secrets
-
 from library.utilities.misc import parse_link, get_resource_type
+from library.utilities.logger import get_logger
+from google.auth.transport.requests import AuthorizedSession
+from google.auth import default
+from requests import codes, exceptions
+
+import time
+import re
+from json import JSONDecodeError
+
 
 class GcloudRestLibBase:
     """
     Expected to house all common functionality for Rest Client
     """
+    operation_polling_time_sleep_secs = 5
 
-    def __init__(self, **kwargs):
+    def __init__(self, project_id, **kwargs):
         # Add authentication check here
         # Add common object instantiation
         # TODO: fetch the default project from the APPLICATION CREDENTIALS JSON
-        self.project_id = kwargs.get('project_id', secrets.project_1)
+        self.project_id = project_id
+        self.credentials, self.default_project_id = default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
+        self.session = AuthorizedSession(self.credentials)
+        self.logger = get_logger(__name__)
+
+    def wait_for_operation(self, operation, max_timeout_mins=15):
+        """
+        :param operation: the  operation object
+        :param max_timeout_mins:
+        :return: Bool(status), Dict(Last Operation Recieved)
+        """
+        # TODO: Implement max_timeout_mins
+        operation_status = operation['status']
+        self.logger.debug('Beginning to poll for operation')
+        operation_self_link = operation['selfLink']
+        start_time = time.time()
+        while operation_status != 'DONE' and time.time() - start_time < max_timeout_mins * 60:
+            self.logger.debug(f'Sleeping for {self.operation_polling_time_sleep_secs} secs before polling')
+            time.sleep(self.operation_polling_time_sleep_secs)
+            self.logger.debug("Making post call for operation status on wait endpoint ..")
+            operation_response = self.session.post(operation_self_link + "/wait")
+            self.logger.error(f'Recieved operation response: {operation_response.text}')
+            if not operation_response.status_code == codes.ok:
+                if operation_response.status_code == codes.not_found:
+                    self.logger.debug('Apprehending 404 not found  as ')
+                    return True
+                self.logger.error(f'Error while polling for operation')
+                return False
+            operation = operation_response.json()
+            operation_status = operation['status']
+            self.logger.debug(operation)
+
+        error = operation.get('error')
+        if error:
+            self.logger.exception('Error while polling for operation: {}'.format(error))
+            return False
+        self.logger.debug(f"Final operation status: {operation}")
+        return operation_status == 'DONE'
+
+    def delete_self_link(self, self_link, delete_dependencies=True):
+        max_retries = 5
+        count = 0
+        self.logger.debug(f'Received request to delete: {self_link}')
+
+        while count < max_retries:
+            count += 1
+            self.logger.debug(f"Attempt #{count}")
+
+            if count > 1:
+                self.logger.debug(f"Sleeping  for {self.operation_polling_time_sleep_secs} secs before re-attempting")
+                time.sleep(self.operation_polling_time_sleep_secs)
+
+            del_response = self.session.delete(self_link)
+            self.logger.info(del_response.status_code)
+
+            # Apprehending 404 not_found as resource already deleted
+            if del_response.status_code == codes.not_found:
+                self.logger.info("Apprehending 404 as resource already deleted")
+                return True
+
+            # If response == 400, trying to check if it a resourceInUseByAnotherResource and resolve it
+            if del_response.status_code == codes.bad_request:
+                self.logger.debug("Bad Request on delete request. Trying to debug it .. ")
+                self.logger.debug(f"Response text : {del_response.text}")
+                try:
+                    self.logger.debug("Decoding Error JSON")
+                    response_json = del_response.json()
+                    for error in response_json['error'].get('errors', []):
+                        if error.get('reason', "") == "resourceInUseByAnotherResource" \
+                                and ("used" in error.get("message", "") or "depend" in error.get("message", "")):
+                            error_message = error['message']
+                            possible_dependency_search = re.search(pattern=r"'[0-9a-zA-Z_/-]+'$", string=error_message)
+                            self.logger.debug('Using regex to figure out dependency')
+                            if possible_dependency_search:
+                                dependent_resource = possible_dependency_search.group()
+                                old = self_link.split('/')
+                                new = dependent_resource.strip("'").split('/')
+                                for i in range(old.index(new[0])):
+                                    new.insert(i, old[i])
+                                dependent_resource_self_link = '/'.join(new)
+                                self.logger.info(f"Dependent resource self_link : {dependent_resource_self_link}")
+                                self.logger.info("Attempting to delete it .. ")
+                                self.delete_self_link(dependent_resource_self_link)
+                            else:
+                                self.logger.debug('Dependency could not be identified using regex')
+                        else:
+                            self.logger.debug('The error message is not known .. cant debug that')
+
+                except ValueError:
+                    self.logger.exception('ValueError while reading JSON from response body')
+                    pass
+                except KeyError:
+                    pass
+
+            # Checking if an operation object was returned
+            try:
+                response_json = del_response.json()
+                if "operation" in response_json.get("kind", ""):
+                    return self.wait_for_operation(operation=response_json)
+            except ValueError:
+                pass
+
+        # Anything in 400 and 500 series
+        try:
+            del_response.raise_for_status()
+        except exceptions.HTTPError as ex:
+            self.logger.exception(del_response.text)
+            raise ex
+
+        return True

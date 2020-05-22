@@ -1,0 +1,25 @@
+---
+rule_id: R_ABC_00002
+#Identifies by the name of '*test*' and Existing for more than 6 hours
+
+resource_types:
+  - compute_v1_instances
+  - sql_v1beta4_instances
+  - redis_v1_instances
+  - storage_v1_b
+
+filter_criterion:
+  - filter_id: F0001
+    filter_type: NAME # Must be one from pre-configured values
+    filter_data:
+      name_regex: "test"
+
+  - filter_id: F0005
+    filter_type: AGE # Must be one from pre-configured values
+    filter_data:
+      age: 6
+      unit: hours
+
+
+filter_combination:
+  join_rule: (F0001 and F0005)

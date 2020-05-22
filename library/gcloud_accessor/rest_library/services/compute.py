@@ -65,7 +65,7 @@ class GcloudCompute(GcloudRestLibBase):
         return all_instances
 
     @compute_service_required
-    def list_all_instances(self):
+    def list_all_compute_instances(self):
         all_instances = self.compute_service.instances().aggregatedList(project=self.project_id).execute()
         return all_instances
 

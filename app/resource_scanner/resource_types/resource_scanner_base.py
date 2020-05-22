@@ -8,7 +8,7 @@ class ResourceScannerBase:
     Houses Common functions required by all scanner functions
     """
 
-    def __init__(self, **kwargs):
-        self.gcloud_client = Gcloud()
+    def __init__(self, project_id, **kwargs):
+        self.gcloud_client = Gcloud(project_id=project_id)
         self.filter_lib = FilterLib()
         self.rules_accessor = RulesAccessor()
