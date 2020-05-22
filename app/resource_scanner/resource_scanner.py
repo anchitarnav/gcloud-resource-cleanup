@@ -18,6 +18,11 @@ class ResourceScanner(Scanner__Compute_V1_Instances, Scanner__Sql_V1beta4_Instan
         return all_required_resource_types
 
     def scan_all_resources(self, rules, **kwargs):
+        """
+        :param rules: list of rules
+        :param kwargs:
+        :return:
+        """
         # TODO: Break down in modular functions
         all_qualifying_resources = dict()
         resource_types = self.get_resource_types_for_all_rules(rules=rules)

@@ -1,0 +1,17 @@
+---
+rule_id: a_week_old_resources
+#Scans for resources with age more than 7 days
+
+resource_types:
+  - compute_v1_instances
+
+filter_criterion:
+  - filter_id: F0001
+    filter_type: AGE # Must be one from pre-configured values
+    filter_data:
+      age: 6
+      unit: hours
+
+
+filter_combination:
+  join_rule: (F0001)

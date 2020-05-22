@@ -1,0 +1,19 @@
+---
+rule_id: foo_bar_tag_scanner
+# Scans for all resources that have the LABEL, key-> foo value-> bar
+
+resource_types:
+  - compute_v1_instances
+  - sql_v1beta4_instances
+  - redis_v1_instances
+  - storage_v1_b
+
+
+filter_criterion:
+  - filter_id: F0001
+    filter_type: TAG
+    filter_data:
+      key: 'foo'
+
+filter_combination:
+  join_rule: (F0001)
